@@ -1,0 +1,276 @@
+=================================================================================================================================================
+###################### DOCKER in a nutshell ############ [My Docker Hub UserId/Pwd: subratasankarroy/lo******]
+=================================================================================================================================================
+ 1) Docker is a platform to Build, Run and Share applications with Containers.  
+ 2) The use of Container to deploy applications is called Containerization.
+ 3) Containers are Flexible,Lightweight,Portable,Loosely coupled,Scalable,Secure.
+ 4) Container is a running process,with added encapsulation features applied to it in order to keep it isolated from the host machine where it's 
+    running and from the other containers in the host.
+ 5) Most important aspects of container isolation is that each container interacts with its own private filesystem.
+ 6) This filesystem is provided to the Container by a Docker image. 
+ 7) An image includes everything needed to run an application - the executable, runtimes, dependencies, and any other filesystem objects required.
+ 8) Containers share the host machine kernel, making them much more efficient in terms of system resources than virtual machines(VM).
+ 9) VM runs a full-blown “guest” OS with virtual access to host resources via a hypervisor. So, VM incur a lot of overhead.
+10) When in the command prompt(cmd) of windows we run a docker command(e.g. docker run hello-world ), then cmd contacts the Windows Docker Client.
+11) Docker Client then contacts the Docker Daemon, which checks the image locally.
+12) If not found locally then the Daemon contacts the Docker Hub and pulls the image from there.
+13) Docker Hub is the place where open Docker images are stored.
+14) Docker Daemon then creates a new Container from that downloaded image and the Container runs the executable present in the image.
+15) Docker Daemon streams that output to the Docker Client, which sent it to the terminal. 
+16) To create a Docker image a Dockerfile is required. Docker build images by reading instructions from a Dockerfile.
+17) Dockerfile is a text document that contains all the commands a user could call on the command line to assemble an image
+18) To create an image for java project(say TestJava) first create the java/maven project and build it with maven.
+19) Then write a Dockerfile inside directly the folder TestJava as follows -
+    FROM openjdk:latest
+	COPY target/TestJava-0.0.1-SNAPSHOT.jar /usr/src/TestJava-0.0.1-SNAPSHOT.jar
+    CMD java -cp /usr/src/TestJava-0.0.1-SNAPSHOT.jar com.ericsson.testJava.TestJava (where com.ericsson.testJava==package & TestJava=main java class)
+20) In the command prompt go to the directory TestJava and run the following command to build the image -
+    "docker build -t docker-java-test:1.0 ." where docker-java-test is the image name(need not be same with ur jar or war. Could be any string but only small letters allowed) and 1.0 is the version, which is optional. If version is not given then the default version value is given as "latest"
+	[OR "docker image build -t docker-java-test:1.0 ."]
+21) Run the image with the following command -
+    "docker run --name ssroy docker-java-test:1.0" 
+	[to run an web image in Tomcat: "docker run -d --name ssroy -it -p 9292:8080 <IMAGE ID>" ; where -d option is to run the container in background(like '&' to run any linux command in background) ,
+	9292 is the local port and 8080 is the default port for Tomcat for example]
+	OR
+	run with given MAC address
+	docker run -d --name ssroy -it --mac-address 00:0C:29:C6:58:12 -p 9292:8080 00f75ff306b1 
+	[where 00:0C:29:C6:58:12=MAC_ADDRESS(mentioned in the License file, required for SO-NETWORKLAYER) & 00f75ff306b1=IMAGE_ID]
+	
+
+	
+IMP Links to read about the Docker
+https://docs.docker.com/docker-for-windows/install/ 
+https://docs.docker.com/get-started/
+https://docs.docker.com/docker-for-windows/
+https://docs.docker.com/develop/
+https://github.com/docker/labs/tree/master/developer-tools/java/
+https://docs.docker.com/engine/reference/commandline/cli/
+=================================================================================================================================================
+
+
+=================================================================================================================================================
+### IMP COMMANDS ####
+=====================
+ 1) To get Help : docker container --help
+ 2) See list of running containers : docker container ls
+ 3) See list of all containers(running & stopped) : docker container ls -a
+ 4) See list of docker images created : docker images
+ 5) Remove a running container : docker kill <CONTAINER_ID>
+ 6) Remove a stopped container : docker container rm <CONTAINER ID>
+ 7) Delete a docker image : docker image rm <IMAGE ID>
+                                  OR
+	                        docker image prune -a -f --filter "label=LabelKey=so-networklayer-label" 
+							[NOTE: 'label' key/value must be exactly same as defined in the Dockerfile with keyword 'LABEL';
+							        here LabelKey is the key of the label and so-networklayer-label is the value of the label in Dockerfile]
+ 8) To pull an image from Docker Hub(https://hub.docker.com ) : docker pull <image_name>:<version>
+    e.g to pull tomcat with jdk8 version, run : docker pull tomcat:jdk8 
+ 9) To access the folder/files of a deployed application in docker container: docker exec -it <CONTAINER_ID> bash [OR /bin/bash]
+    e.g An image is created for a WAR file and now that is running. Now while running that image an container(CONTAINER_ID - c296062ba1de) has been created and to see those files/folders of the deployed application in docker tomcat run -> docker container exec -it c296062ba1de bash
+	Now the output will be something like -> root@c296062ba1de:/usr/local/tomcat# [where, "root@c296062ba1de" is the command prompt and "/usr/local/tomcat" is the path in the docker container where the tomcat is running]
+    Now we can perform normal operations to list the files/folders like "ls" and cd to g inside any folder(directory)
+10) To copy a file from local machine to the container : docker cp '<Local_File_path>' <CONTAINER_ID>:'<Path_In_The_Container'>
+    e.g. To copy a war file in the tomcat container webapps directory -> 	'C:\abc.war' c296062ba1de:'/usr/local/tomcat/webapps'
+11) To get the docker container IP : docker exec <CONTAINER_ID> cat /etc/hosts
+	------------------------- OR -------------------  
+                                   : docker exec -it <CONTAINER_ID> bash
+                      and then run : ip -4 -o address
+12) To get the docker container MAC Address : docker network inspect bridge		
+13) To set a MAC address to a Container : docker run -it --mac-address <MAC ADDRESS> [e.g. 00:0C:29:C6:58:12]
+14) To install VI editor in a running continer: docker exec -it <CONTAINER_ID> bash
+                                 and then run : apt-get update
+								     then run : apt-get -y install vim	
+15) To activate "ll" command in a running continer: docker exec -it <CONTAINER_ID> 
+                                     and then run : alias ll="ls -al"		
+16) To copy file from local to container : docker cp <LOCAL_FILE_PATH> <CONTAINER_ID>:<CONTAINER_PATH>
+     e.g. docker cp C:\Users\esubrro\Downloads\Mac_Address123.txt b7e57ce3c23a:/usr/local/tomcat/Mac_Address123.txt	
+17) To copy file from container local: docker cp <CONTAINER_ID>:<CONTAINER_PATH>  <LOCAL_FILE_PATH>
+     e.g. docker cp b7e57ce3c23a:/usr/local/tomcat/Mac_Address123.txt  C:\Users\esubrro\Downloads\Mac_Address123.txt
+18) To create a new image from a running Container : docker commit <CONTAINER ID> <NAME_OF_THE_NEW_IMAGE(can be any string but in lower case only)> 
+19) To save an image as tar file[First create an image of a running container] : 
+                                  docker save --output[or -o] <TAR_FILE_NAME> <IMAGE_NAME_1 i.e. REPOSITORY> <IMAGE_NAME_2> ....<IMAGE_NAME_n>
+                                   e.g. docker save --output myfinaldocker.tar myfinaldocker
+								                OR
+								   docker save <IMAGE_NAME i.e. REPOSITORY> > <TAR_FILE_NAME>
+								   e.g. docker save myfinaldocker > myfinaldocker.tar
+20) To load the image from a TAR file : docker load --input[or -i] <TAR_FILE_NAME>
+                                        e.g. docker load --input myfinaldocker.tar
+                                                OR										
+										docker load < <TAR_FILE_NAME>
+21) To export a container[Better to use save] : docker export --output <TAR_FILE_NAME> <CONTAINER ID>
+							e.g. docker export --output finalcontainer.tar 6e139618326d
+22) To import a container [Better to use load]: docker import <TAR_FILE_NAME>
+							e.g. docker import finalcontainer.tar
+23) Diff between export & save : export is used to export the container’s file system into a tar file.It doesn’t export any volumes,history 
+                                 associated with it. save is used to save one or more images into a tar file along with volume,hsitory etc.
+24) To download an image from Docker Hub : docker pull <DOCKER_HUB_USER_NAME>/<IMAGE NAME>:<VERSION> [Version is found under 'Tags' tab in the Hub]	
+								           e.g. docker pull subratasankarroy/docker-java-test:1.0
+25) To upload an image in the Docker Hub : docker push <MY_DOCKER_HUB_USER_NAME>/<IMAGE NAME>:<VERSION(optional)>
+								           e.g. docker push subratasankarroy/docker-java-test:1.0		
+26) To check docker log : https://sematext.com/blog/docker-logs-location/	
+27) TO RUN A NEW DOCKER IMAGE IN LINUX WHERE FIREWALL IS ENABLED
+		i) First, Stop Firewall    : systemctl stop firewalld
+	   ii) Then, Stop Docker       : systemctl stop docker
+	  iii) Then, Start Docker      : systemctl start docker
+       iv) Finally, start Firewall : systemctl start firewalld
+
+=================================================================================================================================================
+
+
+=================================================================================================================================================
+      ############ PROCESS TO BUILD, RUN & SHARE DOCKER IMAGE OF WAR FILE OF SOA WEB TOOLS IN TOMCAT 9 (WITH HTTPS) ############
+=================================================================================================================================================
+(A) Create the Docker IMAGE in local Windows machine.
+-----------------------------------------------------
+	(a) Prerequisite : 
+	    ..............
+		 In the Windows machine, the Docker Desktop is installed and running. 
+	(b) Steps :
+	    .......
+		 1) Create a text file namely 'Dockerfile' and put in a folder.  [Note : File Name should be exactly 'Dockerfile']
+		 2) Add the following lines in that file.  [Note : This is sample Dockerfile for SO-Netwoklayer]
+		       FROM tomcat:9
+			   COPY so-networklayer.war /usr/local/tomcat/webapps.dist/so-networklayer.war
+			   COPY catalina.sh /usr/local/tomcat/bin/catalina.sh
+			   COPY extlib/* /usr/local/tomcat/extlib/
+			   COPY lib/* /usr/local/tomcat/lib/
+			   COPY WebToolLicense /usr/nsue/config_local/WebToolLicense
+			   LABEL LabelKey=so-networklayer-label
+		 3) Put all the files/folders(e.g. so-networklayer.war,catalina.sh, extlib etc) mentioned in the Dockerfile in the same folder where 
+            Dockerfile is.		 
+		    [Note : Download catalina.sh, extlib, lib(only  the 10 additional jars which has been added in the SOA-Tomcat) e.t.c from SOA-TOMCAT of 
+			        any running server and put in the same folder where Dockerfile is.]
+		 4) Open the CMD prompt and nevigate to the folder where the Dockerfile and other files/folders has been kept.
+		 5) Build the IMAGE : docker build -t <IMAGE_NAME> .    [IMAGE_NAME can be any String in lowercase only]
+		    [Note : To build image via maven build see section (C) at the end]
+		 6) Check the IMAGE has been created successfully  : docker images
+		 7) Run the IMAGE(CONTAINER will be created from the IMAGE and will be running) : 
+			  docker run -d --name <ANY_STRING_IN_LOWER_CASE> -it --mac-address <MAC_ADDRESS_MENTIONED_IN_THE_LICENSE_FILE> -p 8080:8080 <IMAGE_ID>)
+		 8) Check that the CONTAINER, just created from the image is running : docker ps -a
+		 9) To communicate with the files/directories inside the running CONTAINER : docker exec -it <CONTAINER_ID> bash
+		10) Go to /usr/local/tomcat and rename(mv command) 'webapps' to 'webapps2' and 'webapps.dist' to 'webapps'.
+		11) Install VI editor inside the running CONTAINER : apt-get update
+												  then run : apt-get -y install vim
+		12) Exit from /usr/local/tomcat.
+		13) Stop the CONTAINER  : docker stop <CONTAINER_ID>.
+		14) Start the CONTAINER : docker start <CONTAINER_ID>.
+		15) Run in the Browser and check(Should be working without https, i.e. http://localhost:8080/so-networklayer/).
+		16) Create a new IMAGE from a running CONTAINER(Required because some folders like 'webapps.dist' in the CONTAINER has been renamed): 
+		      docker commit <CONTAINER ID> <NEW_IMAGE_NAME>   [IMAGE_NAME can be any String in lowercase only]
+		17) Check the new IMAGE has been created successfully : docker images
+		18) Save the new IMAGE as tar file : docker save --output <TAR_FILE_NAME> <NEW_IMAGE_NAME>
+		
+(B) Run the Docker IMAGE in a remote Linux machine.
+----------------------------------------------------
+	(a) Prerequisite : 
+	    ..............
+		  i) In the remote Linux machine, the Docker is installed and running.
+		 ii) Stop Firewall(if required )         : systemctl stop firewalld
+		iii) Stop Docker(if 'ii' is performed)   : systemctl stop docker
+	     iv) Start Docker(if 'iii' is performed) : systemctl start docker
+	(b) Steps :
+	    .......
+		 1) Copy the tar file(created earlier) to that remote Linux server.
+		 2) Load the IMAGE from the TAR file : docker load --input <ABSOLUTE_PATH_OF_THE_TAR_FILE_IN_THE_LINUX_MACHINE>
+		 3) Check the new IMAGE has been created successfully from the tar file : docker images
+		 Note: The below 2/3 steps are required to run in https. 
+		 4) Download the server.xml from SOA-TOMCAT of any running server and make the following changes locally.
+		    [  i) Comment the line containing docBase="soa-webapp".
+              ii) Add secret="OK"(or any non-zero length string) to the line containing <Connector port="8009" protocol="AJP/1.3"....... to avoid the error - ' The AJP Connector is configured with secretRequired="true" but the secret attribute is either null or "". This combination is not valid.' ]
+         5) Then copy this modified server.xml in a directory in the LINUX Machine.	
+		 6) Download the keystore from SOA-TOMCAT of any running server and copy in the same directory in the Linux machine as server.xml.
+         7) Take the web.xml of the project for which the imgae has been created and make the following changes locally. 
+			Add the following lines at the end of the web.xml
+				<!-- Force HTTPS, required for HTTP redirect! -->
+				<security-constraint>
+					<web-resource-collection>
+					  <web-resource-name>Protected Context</web-resource-name>
+					  <url-pattern>/*</url-pattern>
+					</web-resource-collection>
+					<user-data-constraint>
+					  <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+					</user-data-constraint>
+				</security-constraint>
+		 8) Copy this modified web.xml in the same directory in the Linux machine as server.xml.
+         9) Run the new IMAGE : docker run -d --name ssroy -it --mac-address <MAC_ADDRESS> -p 8080:8080 -p 8444:8444  
+								-v <ABSOLUTE_PATH_TO_server.xml>:/usr/local/tomcat/conf/server.xml 
+								-v <ABSOLUTE_PATH_TO_keystore>:/usr/local/tomcat/keystore 
+								-v <ABSOLUTE_PATH_TO_web.xml>:/usr/local/tomcat/webapps/so-networklayer/WEB-INF/web.xml <IMAGE_ID>
+	
+							e.g. docker run -d --name ssroy -it --mac-address 00:0C:29:C6:58:12 -p 8080:8080 -p 8444:8444 -v /opt/ssroy/server.xml:/usr/local/tomcat/conf/server.xml -v /opt/ssroy/keystore:/usr/local/tomcat/keystore -v /opt/ssroy/web.xml:/usr/local/tomcat/webapps/so-networklayer/WEB-INF/web.xml 878aca2f63d3
+		10) To communicate with the files/directories inside the running CONTAINER : docker exec -it <CONTAINER_ID> bash
+        11) Now run in the browser- http://<IP>:<PORT>/PROJECT_NAME   
+									- where IP is the IP of the remote LINUX Machine where the Docker/CONTAINER is running.
+									- and PORT is the port given in the run command.				   
+                         e.g. http://10.65.244.26:8080/so-networklayer
+
+(C) Create the Docker IMAGE using maven build.
+-----------------------------------------------------
+	(a) Prerequisite : 
+	    ..............
+		 In the Windows machine, the Docker Desktop is installed and running. 
+	(b) Steps :
+	    .......
+         1) Open the Eclipse and expand the Project(The Project where the .war is generated under the 'target' folder).
+		 2) Put the Dockerfile at the same level as the pom.xml of the Project.
+		    Add the following lines in that file.  [Note : This is sample Dockerfile for SO-Netwoklayer]
+		    FROM tomcat:9
+			COPY /target/so-networklayer.war /usr/local/tomcat/webapps.dist/so-networklayer.war
+			COPY /src/main/docker/catalina.sh /usr/local/tomcat/bin/catalina.sh
+			COPY /src/main/docker/extlib/* /usr/local/tomcat/extlib/
+			COPY /src/main/docker/lib/* /usr/local/tomcat/lib/
+			COPY /src/main/docker/WebToolLicense /usr/nsue/config_local/WebToolLicense
+			LABEL LabelKey=so-networklayer-label
+		 3) Create a folder namely 'docker' under /src/main.
+		 4) Put all the files/folders mentioned in the Dockerfile in the folder /src/main/docker.
+		 5) In the pom.xml add the following lines under <plugins>.
+			<!-- Docker Image Build Start --> 
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.6.0</version>
+				<executions>
+					<!-- Remove existing image from local repo -->
+					<execution>
+						<id>docker-clean</id>
+						<phase>install</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>docker</executable>
+							<workingDirectory>${project.basedir}</workingDirectory>
+							<arguments>
+								<argument>image</argument>
+								<argument>prune</argument>
+								<argument>-a</argument>
+								<argument>-f</argument>
+								<argument>--filter</argument>
+								<argument>"label=LabelKey=so-networklayer-label"</argument>-->
+								<!-- NOTE: 'label' key/value must be exactly same as defined in the Dockerfile with keyword 'LABEL' -->
+							</arguments>
+						</configuration>
+					</execution>
+					<!-- Create new docker image using Dockerfile which must be present in current working directory.
+			             Tag the image using maven project version information.-->
+					<execution>
+						<id>docker-build</id>
+						<phase>install</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>docker</executable>
+							<workingDirectory>${project.basedir}</workingDirectory>
+							<arguments>
+								<argument>build</argument>
+								<argument>-t</argument>
+								<argument>docker_img_${project.artifactId}:${project.version}</argument>
+								<argument>.</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Docker Image Build End   --> 		
+         6) Run maven build with goal - clean install.		
+=================================================================================================================================================
